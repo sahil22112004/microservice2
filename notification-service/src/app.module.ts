@@ -4,7 +4,9 @@ import { AppService } from "./app.service";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { ScheduleModule } from "@nestjs/schedule";
 import { config } from "dotenv";
-import { UserOutbox } from "./enitites/userOutbox.entity";
+import { NotificationInbox } from "./entites/notificationInbox.entity";
+import { RabbitMQConsumer } from "./rabbitmq/consumer/rabbitmq.consumer";
+import { RabbitMQConnection } from "./rabbitmq/rabbitmq.connection";
 
 config();
 
@@ -12,20 +14,20 @@ config();
   imports: [
     ScheduleModule.forRoot(),
     TypeOrmModule.forRoot({
-      type: "postgres",
+      type: 'postgres',
       host: process.env.DB_HOST,
       port: Number(process.env.DB_PORT),
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE,
-      entities: [UserOutbox],
+      entities: [NotificationInbox],
       synchronize: false,
     }),
-    TypeOrmModule.forFeature([UserOutbox]),
+    TypeOrmModule.forFeature([NotificationInbox]),
   ],
   controllers: [AppController],
-  providers: [
-    AppService,
+  providers: [AppService,
+    // RabbitMQConnection, RabbitMQConsumer
   ],
 })
-export class AppModule {}
+export class AppModule { }

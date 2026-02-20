@@ -7,17 +7,16 @@ services:
       - "5672:5672"
       - "15672:15672"
     environment:
-      RABBITMQ_DEFAULT_USER: guest
-      RABBITMQ_DEFAULT_PASS: guest
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
 
   db:
     image: postgres:15
     container_name: postgres
     restart: always
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: auth
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - pgdata:/var/lib/postgresql/data
     ports:
@@ -28,11 +27,59 @@ services:
     container_name: nest-pgadmin4
     restart: always
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@admin.com
-      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
     ports:
       - "5050:80"
     depends_on:
       - db
+
+
+  user-service:
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
+      target: development
+    container_name: nest-backend-user-service
+    restart: always
+    volumes:
+      - ./user-service:/app
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+    environment:
+      PORT: 3000
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_USERNAME: ${DB_USER}
+      DB_PASSWORD: ${DB_PASS}
+      DB_DATABASE: ${USER_DB_DATABASE}
+      RABBITMQ_URL: ${RABBITMQ_URL}
+    depends_on:
+      - db
+
+  notification-service:
+    build:
+      context: ./notification-service
+      dockerfile: Dockerfile
+      target: development
+    container_name: nest-backend-notification-service
+    restart: always
+    volumes:
+      - ./notification-service:/app
+      - /app/node_modules
+    ports:
+      - "3001:3001"
+    environment:
+      PORT: 3001
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_USERNAME: ${DB_USER}
+      DB_PASSWORD: ${DB_PASS}
+      DB_DATABASE: ${NOTIFICATION_DB_DATABASE}
+      RABBITMQ_URL: ${RABBITMQ_URL}
+    depends_on:
+      - db
+  
 volumes:
   pgdata:

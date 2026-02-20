@@ -6,6 +6,8 @@ import { ScheduleModule } from '@nestjs/schedule'
 import { config } from 'dotenv'
 import { UserOutbox } from './enitites/userOutbox.entity'
 import { User } from './enitites/user.entity'
+import { RabbitMQConnection } from './rabbitmq/rabbitmq.connection'
+import { RabbitMQPublisher } from './rabbitmq/producer/rabbitmq.publisher'
 
 config()
 

@@ -1,9 +1,15 @@
 import { Injectable, OnModuleInit } from "@nestjs/common";
 import { RabbitMQConnection } from "./../rabbitmq.connection";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
+import { NotificationInbox } from "../../entites/notificationInbox.entity";
 
 @Injectable()
 export class RabbitMQConsumer implements OnModuleInit {
-  constructor(private rabbitConnection: RabbitMQConnection) {}
+  constructor(
+    @InjectRepository(NotificationInbox) private notificationInboxRepo: Repository<NotificationInbox>,
+    
+    private rabbitConnection: RabbitMQConnection) {}
 
   async onModuleInit() {
     const channel = await this.rabbitConnection.getChannel();
@@ -22,11 +28,19 @@ export class RabbitMQConsumer implements OnModuleInit {
 
     channel.consume(
       "notification_queue",
-      (msg: any) => {
+      async (msg: any) => {
         if (!msg) return;
 
         const content = msg.content.toString();
-        console.log("Message Received:", content);
+        const data = JSON.parse(content);
+        console.log("Message id:", data.messageId);
+        console.log("Message id:", data.message);
+        const inboxData ={
+          id:data.messageId,
+          message:data.message
+        }
+        const Inbox=  this.notificationInboxRepo.create(inboxData)
+        await this.notificationInboxRepo.save(Inbox)
 
         channel.ack(msg);
       },

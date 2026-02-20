@@ -1,24 +1,24 @@
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 
-export enum orderStatus {
+export enum InboxStatus {
     pending = 'pending',
-    published = 'published',
+    consumed = 'consumed',
 }
 
-@Entity('usersOutbox')
-export class UserOutbox {
+@Entity('notificationInbox')
+export class NotificationInbox {
 
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
     @Column({ type: 'jsonb' })
-    payload: any;
+    message: any;
 
     @Column({
         type: 'enum',
-        enum: orderStatus,
-        default: orderStatus.pending
+        enum: InboxStatus,
+        default: InboxStatus.pending
     })
-    status: orderStatus
+    status: InboxStatus
 
 }
